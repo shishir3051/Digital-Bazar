@@ -23,6 +23,8 @@ class ECommerceAPITester:
         self.test_admin_id = None
         self.test_product_id = None
         self.test_order_id = None
+        self.test_username = None
+        self.test_password = "TestPass123"
         self.results = {
             "passed": 0,
             "failed": 0,
