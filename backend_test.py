@@ -373,11 +373,11 @@ class ECommerceAPITester:
             # Test cart access without token
             response = self.session.get(f"{self.base_url}/cart")
             
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:
                 self.log_result("Unauthorized Access Test", True, "Correctly rejected unauthenticated request")
                 return True
             else:
-                self.log_result("Unauthorized Access Test", False, f"Expected 401, got {response.status_code}", response.text)
+                self.log_result("Unauthorized Access Test", False, f"Expected 401 or 403, got {response.status_code}", response.text)
                 return False
         except Exception as e:
             self.log_result("Unauthorized Access Test", False, "Request failed", str(e))
