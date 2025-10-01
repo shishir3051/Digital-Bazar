@@ -73,7 +73,7 @@ class ECommerceAPITester:
                 "username": f"testuser_{timestamp}",
                 "email": f"testuser_{timestamp}@example.com",
                 "full_name": "John Doe",
-                "password": "SecurePassword123!"
+                "password": "TestPass123"
             }
             
             response = self.session.post(f"{self.base_url}/auth/register", json=test_user)
