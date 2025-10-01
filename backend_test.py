@@ -102,10 +102,13 @@ class ECommerceAPITester:
         """Test user login endpoint"""
         try:
             # Use the registered user credentials
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            if not self.test_username:
+                self.log_result("User Login", False, "No test username available", "Need to run registration test first")
+                return False
+            
             login_data = {
-                "username": f"testuser_{timestamp}",
-                "password": "TestPass123"
+                "username": self.test_username,
+                "password": self.test_password
             }
             
             response = self.session.post(f"{self.base_url}/auth/login", json=login_data)
