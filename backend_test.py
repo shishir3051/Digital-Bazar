@@ -71,11 +71,12 @@ class ECommerceAPITester:
         try:
             # Generate unique test data
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.test_username = f"testuser_{timestamp}"
             test_user = {
-                "username": f"testuser_{timestamp}",
+                "username": self.test_username,
                 "email": f"testuser_{timestamp}@example.com",
                 "full_name": "John Doe",
-                "password": "TestPass123"
+                "password": self.test_password
             }
             
             response = self.session.post(f"{self.base_url}/auth/register", json=test_user)
