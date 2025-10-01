@@ -249,12 +249,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "User Authentication (Register/Login)"
-    - "Product Management API"
-    - "Shopping Cart API"
-    - "Order Management API"
+    - "Authentication UI"
+    - "Shopping Cart UI"
+    - "Checkout Process UI"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
