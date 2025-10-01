@@ -102,7 +102,7 @@ class ECommerceAPITester:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             login_data = {
                 "username": f"testuser_{timestamp}",
-                "password": "SecurePassword123!"
+                "password": "TestPass123"
             }
             
             response = self.session.post(f"{self.base_url}/auth/login", json=login_data)
