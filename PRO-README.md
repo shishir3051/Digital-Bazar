@@ -7,7 +7,6 @@ A production-ready full-stack e-commerce application built with FastAPI, React, 
 - **RESTful API**: Fast and robust API endpoints with Pydantic validation.
 - **JWT Authentication**: Secure user sessions with token-based authentication.
 - **Shopping Cart & Orders**: Fully functional e-commerce workflow.
-- **Containerized**: Ready for deployment with Docker and Docker Compose.
 
 ## Project Structure
 ### Backend (FastAPI)
@@ -27,7 +26,7 @@ A production-ready full-stack e-commerce application built with FastAPI, React, 
 ### Prerequisites
 - Python 3.11+
 - Node.js 20+
-- MongoDB 6.0+ OR Docker
+- MongoDB 6.0+
 
 ### Development Setup
 1. **Backend**:
@@ -42,12 +41,6 @@ A production-ready full-stack e-commerce application built with FastAPI, React, 
    npm install
    npm start
    ```
-
-### Production Deployment (Docker)
-Run the entire stack with a single command:
-```bash
-docker-compose up --build
-```
 
 ## API Documentation
 Once the backend is running, access the interactive Swagger docs at:
