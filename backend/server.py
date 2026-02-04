@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 import jwt
 from passlib.context import CryptContext
 import json
+import random
+import string
 
 
 ROOT_DIR = Path(__file__).parent
@@ -136,6 +138,14 @@ class LoginResponse(BaseModel):
     token: str
     user: User
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    otp: str
+    new_password: str
+
 
 # Authentication Routes
 @api_router.post("/auth/register", response_model=LoginResponse)
@@ -181,6 +191,64 @@ async def login(login_data: UserLogin):
 @api_router.get("/auth/me", response_model=User)
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    user = await db.users.find_one({"email": request.email})
+    if not user:
+        # We return success even if user doesn't exist for security (avoid email enumeration)
+        # But for this demo, we can be more explicit or just log it.
+        return {"message": "If an account exists with this email, an OTP has been sent."}
+    
+    # Generate 6-digit OTP
+    otp = ''.join(random.choices(string.digits, k=6))
+    expiry = datetime.now(timezone.utc).timestamp() + 600 # 10 minutes
+    
+    # Store OTP (we could hash it, but for simplicity we store it plain in a temp collection)
+    await db.password_resets.update_one(
+        {"email": request.email},
+        {"$set": {"otp": otp, "expiry": expiry}},
+        upsert=True
+    )
+    
+    # "Send" email (mock)
+    print(f"\n[EMAIL MOCK] To: {request.email}")
+    print(f"[EMAIL MOCK] Subject: Your Digital Bazar OTP")
+    print(f"[EMAIL MOCK] Body: Your OTP is {otp}. It expires in 10 minutes.\n")
+    
+    return {"message": "OTP sent successfully"}
+
+@api_router.post("/api/auth/reset-password") # Correcting prefix if needed, or stick to /auth/reset-password
+@api_router.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    reset_session = await db.password_resets.find_one({"email": request.email})
+    
+    if not reset_session:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    
+    if reset_session["otp"] != request.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    
+    if datetime.now(timezone.utc).timestamp() > reset_session["expiry"]:
+        await db.password_resets.delete_one({"email": request.email})
+        raise HTTPException(status_code=400, detail="OTP expired")
+    
+    # Find user to get ID
+    user = await db.users.find_one({"email": request.email})
+    if not user:
+         raise HTTPException(status_code=404, detail="User not found")
+         
+    # Update password
+    hashed_password = hash_password(request.new_password)
+    await db.user_passwords.update_one(
+        {"user_id": user["id"]},
+        {"$set": {"password_hash": hashed_password}}
+    )
+    
+    # Clean up reset session
+    await db.password_resets.delete_one({"email": request.email})
+    
+    return {"message": "Password reset successfully"}
 
 
 # Product Routes
@@ -484,3 +552,7 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
