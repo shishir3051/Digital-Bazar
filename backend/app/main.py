@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from .api.api import api_router
 from .core.config import settings
-from .db.mongodb import connect_to_mongo
+from .db.mongodb import connect_to_mongo, db_instance
 import logging
 import sys
 
@@ -65,4 +65,17 @@ app.include_router(api_router) # Support calls without /api prefix
 @app.get("/health")
 @app.get(f"{settings.API_V1_STR}/health") # Health check at both locations
 async def health_check():
-    return {"status": "healthy", "service": settings.PROJECT_NAME}
+    try:
+        # Try to ping the database
+        if db_instance.db is None:
+            await connect_to_mongo()
+        await db_instance.client.admin.command('ping')
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "healthy",
+        "service": settings.PROJECT_NAME,
+        "database": db_status
+    }

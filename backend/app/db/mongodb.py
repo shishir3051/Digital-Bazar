@@ -42,7 +42,14 @@ def normalize_mongo_url(url: str) -> str:
 async def connect_to_mongo():
     """Establishes a connection to MongoDB if not already connected."""
     if db_instance.client is not None:
-        return
+        try:
+            # Test if connection is still alive
+            await db_instance.client.admin.command('ping')
+            return
+        except Exception:
+            # Connection dead, reconnect
+            db_instance.client = None
+            db_instance.db = None
         
     try:
         url = normalize_mongo_url(settings.MONGO_URL)
@@ -50,13 +57,16 @@ async def connect_to_mongo():
         print(f"DATABASE: Connecting to {log_url}")
         
         db_instance.client = AsyncIOMotorClient(
-            url, 
-            serverSelectionTimeoutMS=5000,
-            tlsAllowInvalidCertificates=True # Helpful for some cloud MongoDB setups
+            url,
+            serverSelectionTimeoutMS=10000,
+            connectTimeoutMS=10000,
+            socketTimeoutMS=10000,
+            maxPoolSize=10,
+            minPoolSize=1
         )
         db_instance.db = db_instance.client[settings.DB_NAME]
         
-        # Immediate check
+        # Immediate check with timeout
         await db_instance.client.admin.command('ping')
         print("DATABASE: Connected successfully")
     except Exception as e:
