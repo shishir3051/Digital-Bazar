@@ -40,31 +40,33 @@ def normalize_mongo_url(url: str) -> str:
         return url
 
 async def connect_to_mongo():
+    """Establishes a connection to MongoDB if not already connected."""
+    if db_instance.client is not None:
+        return
+        
     try:
         url = normalize_mongo_url(settings.MONGO_URL)
-        # Mask password in logs
-        log_url = url.split("@")[1] if "@" in url else "invalid-url"
-        print(f"DATABASE: Connecting to cluster: {log_url}")
+        log_url = url.split("@")[1] if "@" in url else "cluster-info"
+        print(f"DATABASE: Connecting to {log_url}")
         
-        db_instance.client = AsyncIOMotorClient(url)
+        db_instance.client = AsyncIOMotorClient(
+            url, 
+            serverSelectionTimeoutMS=5000,
+            tlsAllowInvalidCertificates=True # Helpful for some cloud MongoDB setups
+        )
         db_instance.db = db_instance.client[settings.DB_NAME]
         
-        # Verify connection
+        # Immediate check
         await db_instance.client.admin.command('ping')
-        print("DATABASE: Successfully connected and pinged MongoDB")
+        print("DATABASE: Connected successfully")
     except Exception as e:
         print(f"DATABASE ERROR: {str(e)}")
+        db_instance.client = None
         db_instance.db = None
         raise e
 
-async def close_mongo_connection():
-    if db_instance.client:
-        db_instance.client.close()
-
-def get_database():
+async def get_database():
+    """Dependency that ensures a database connection exists before providing it."""
     if db_instance.db is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database connection not established. Please check server logs."
-        )
+        await connect_to_mongo()
     return db_instance.db
