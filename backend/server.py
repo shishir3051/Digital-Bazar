@@ -533,11 +533,25 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
+# Set all CORS enabled origins
+origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://digitalbazar-com.vercel.app",
+    "https://digital-bazar-adwa.onrender.com"
+]
+
+env_origins = os.environ.get('CORS_ORIGINS', '*')
+if env_origins != "*":
+    for o in env_origins.split(','):
+        if o.strip() not in origins:
+            origins.append(o.strip())
+
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=origins,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

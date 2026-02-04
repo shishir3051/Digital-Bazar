@@ -11,10 +11,20 @@ app = FastAPI(
 )
 
 # Set all CORS enabled origins
-if settings.CORS_ORIGINS == "*":
-    origins = ["*"]
-else:
-    origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",")]
+# We allow localhost for development and the specific Vercel frontend domain
+origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://digitalbazar-com.vercel.app",
+    "https://digital-bazar-adwa.onrender.com"
+]
+
+# If settings.CORS_ORIGINS contains more, add them
+if settings.CORS_ORIGINS and settings.CORS_ORIGINS != "*":
+    env_origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",")]
+    for o in env_origins:
+        if o not in origins:
+            origins.append(o)
 
 print(f"Allowed CORS Origins: {origins}")
 
@@ -22,7 +32,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
