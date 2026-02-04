@@ -533,17 +533,12 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
-from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
-
-# Robust Proxy Support for Render
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
-
-# Simplified "Allow All" CORS (matches Portfolio logic style)
+# Simplified "Allow All" CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 

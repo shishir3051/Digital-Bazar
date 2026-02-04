@@ -4,25 +4,20 @@ from .api.api import api_router
 from .core.config import settings
 from .db.mongodb import connect_to_mongo, close_mongo_connection
 
-from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
-
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Robust Proxy Support for Render
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
-
-# Simplified "Allow All" CORS (matches Portfolio logic style)
-# Since frontend uses Authorization header but NO cookies, 
-# allow_credentials=False with allow_origins=["*"] is the most stable.
+# Simplified "Allow All" CORS
+# This is the most stable configuration for Render + Vercel
+# Using allow_credentials=False allows allow_origins=["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
