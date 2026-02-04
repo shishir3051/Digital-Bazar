@@ -7,8 +7,7 @@ from ..db.mongodb import get_database
 security = HTTPBearer()
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db = Depends(get_database)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> User:
     token = credentials.credentials
     payload = decode_token(token)
@@ -19,6 +18,13 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     user_id = payload.get("user_id")
+    # Resolve the database at runtime so tests can monkeypatch `get_database`
+    db = await get_database()
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database unavailable"
+        )
     user_data = await db.users.find_one({"id": user_id})
     if not user_data:
         raise HTTPException(
