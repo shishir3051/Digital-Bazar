@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "digital-bazar-backend": "file:.."
+  },
+  "devDependencies": {
+    "supertest": "^6.3.3"
+  }
+}

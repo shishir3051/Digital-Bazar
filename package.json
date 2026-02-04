@@ -3,6 +3,8 @@
     "version": "1.0.0",
     "scripts": {
         "vercel-build": "cd frontend && npm install && npm run build && cd .. && mkdir -p public && cp -rp frontend/build/* public/",
-        "build": "npm run vercel-build"
+        "build": "npm run vercel-build",
+        "start:node": "cd backend && npm install && npm start",
+        "test:node": "cd backend && npm install && npm test"
     }
 }

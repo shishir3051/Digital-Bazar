@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
     MONGO_URL: str = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-    DB_NAME: str = os.getenv("DB_NAME", "digital_bazar")
+    DB_NAME: str = os.getenv("DB_NAME", "digital_bazar_test")
     
     CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "*")
 
