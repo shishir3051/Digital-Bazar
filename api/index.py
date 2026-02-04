@@ -1,4 +1,10 @@
+import sys
+from pathlib import Path
+
+# Add the parent directory to the path so we can import backend
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from backend.app.main import app
 
-# This file is used by Vercel to serve the FastAPI application as a serverless function.
-# It simply imports the 'app' instance from our main backend logic.
+# Export app for Vercel serverless function
+__all__ = ['app']

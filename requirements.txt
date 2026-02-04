@@ -1,4 +1,4 @@
-fastapi
+﻿fastapi
 starlette
 motor
 pymongo
@@ -12,3 +12,5 @@ passlib[bcrypt]
 bcrypt==4.0.1
 python-dotenv
 requests
+httpx
+uvicorn[standard]
