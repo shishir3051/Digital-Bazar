@@ -21,9 +21,9 @@ app = FastAPI(
 allowed_origins = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "https://digital-bazar-zeta.vercel.app",  # Your Vercel frontend
     "https://digitalbazar-com.vercel.app",
-    "https://digitalbazar.vercel.app", # Direct domain seen in logs
-    "https://digital-bazar-adwa.onrender.com"
+    "https://digitalbazar.vercel.app"
 ]
 
 app.add_middleware(
