@@ -4,6 +4,9 @@ from .api.api import api_router
 from .core.config import settings
 from .db.mongodb import connect_to_mongo, close_mongo_connection
 
+# Deployment Version: 2026-02-04-V4 (Stable)
+# This version removes all problematic imports and uses a safe CORS policy.
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,

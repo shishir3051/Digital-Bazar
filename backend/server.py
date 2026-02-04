@@ -1,3 +1,4 @@
+# Deployment Version: 2026-02-04-V4 (Stable)
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
