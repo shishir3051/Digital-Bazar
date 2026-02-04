@@ -1,4 +1,9 @@
 # Deployment Version: 2026-02-04-V5 (Ultra Stable)
+from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+from .api.api import api_router
+from .core.config import settings
+from .db.mongodb import connect_to_mongo, close_mongo_connection
 import logging
 import sys
 
