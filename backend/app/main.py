@@ -49,7 +49,22 @@ async def startup_event():
 @app.middleware("http")
 async def log_requests(request, call_next):
     print(f"DEBUG: Request {request.method} {request.url}")
-    return await call_next(request)
+    try:
+        return await call_next(request)
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"CRITICAL ERROR: {str(e)}\n{error_details}")
+        # Return the error details temporarily so we can debug live
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "Internal Server Error",
+                "message": str(e),
+                "trace": error_details if not settings.VERSION.startswith("1") else "hidden"
+            }
+        )
 
 # Include the router at BOTH /api and / (for compatibility)
 app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -1,6 +1,8 @@
 fastapi
 starlette
 motor
+pymongo
+dnspython
 pydantic
 pydantic-settings
 email-validator
@@ -10,4 +12,3 @@ passlib[bcrypt]
 bcrypt==4.0.1
 python-dotenv
 requests
-pip
