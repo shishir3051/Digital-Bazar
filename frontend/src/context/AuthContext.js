@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import api, { authService } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -9,13 +9,23 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      // In a real app, you might want to fetch the user profile here to verify the token
-      // For now, we'll just set the token state
-      setToken(savedToken);
-    }
-    setLoading(false);
+    const fetchUser = async () => {
+      const savedToken = localStorage.getItem('token');
+      if (savedToken) {
+        try {
+          const response = await authService.getMe();
+          setUser(response.data);
+          setToken(savedToken);
+        } catch (error) {
+          console.error('Failed to fetch user:', error);
+          localStorage.removeItem('token');
+          setToken(null);
+          setUser(null);
+        }
+      }
+      setLoading(false);
+    };
+    fetchUser();
   }, []);
 
   const login = (newToken, userData) => {

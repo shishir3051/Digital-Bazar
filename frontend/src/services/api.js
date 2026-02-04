@@ -17,6 +17,7 @@ api.interceptors.request.use((config) => {
 export const authService = {
   login: (data) => api.post('/auth/login', data),
   register: (data) => api.post('/auth/register', data),
+  getMe: () => api.get('/auth/me'),
 };
 
 export const productService = {
@@ -46,6 +47,12 @@ export const paymentsService = {
   getExchangeRate: () => api.get('/payments/exchange-rate'),
   bkashCreatePayment: () => api.post('/payments/bkash/create-payment'),
   bkashExecutePayment: (data) => api.post('/payments/bkash/execute-payment', data),
+};
+
+export const adminService = {
+  getStats: () => api.get('/admin/stats'),
+  getOrders: () => api.get('/admin/orders'),
+  updateOrderStatus: (id, status) => api.put(`/admin/orders/${id}/status`, null, { params: { status } }),
 };
 
 export default api;

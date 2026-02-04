@@ -178,6 +178,11 @@ async def login(login_data: UserLogin):
     return LoginResponse(token=token, user=user_obj)
 
 
+@api_router.get("/auth/me", response_model=User)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
 # Product Routes
 @api_router.get("/products", response_model=List[Product])
 async def get_products(category: Optional[str] = None):
@@ -340,6 +345,33 @@ async def update_order_status(order_id: str, status: str, current_user: User = D
         raise HTTPException(status_code=404, detail="Order not found")
     
     return {"message": "Order status updated"}
+
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    total_products = await db.products.count_documents({})
+    total_orders = await db.orders.count_documents({})
+    
+    # Calculate total revenue
+    pipeline = [
+        {"$match": {"status": {"$ne": "cancelled"}}},
+        {"$group": {"_id": None, "total": {"$sum": "$total_amount"}}}
+    ]
+    revenue_result = await db.orders.aggregate(pipeline).to_list(1)
+    total_revenue = revenue_result[0]["total"] if revenue_result else 0
+    
+    # Get recent orders
+    recent_orders = await db.orders.find().sort("created_at", -1).limit(5).to_list(5)
+    
+    return {
+        "products_count": total_products,
+        "orders_count": total_orders,
+        "total_revenue": total_revenue,
+        "recent_orders": [Order(**order).dict() for order in recent_orders]
+    }
 
 
 # Initialize sample products
