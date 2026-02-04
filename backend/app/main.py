@@ -42,8 +42,11 @@ async def log_requests(request, call_next):
     print(f"DEBUG: Request {request.method} {request.url}")
     return await call_next(request)
 
+# Include the router at BOTH /api and / (for compatibility)
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(api_router) # Support calls without /api prefix
 
 @app.get("/health")
+@app.get(f"{settings.API_V1_STR}/health") # Health check at both locations
 async def health_check():
     return {"status": "healthy", "service": settings.PROJECT_NAME}
