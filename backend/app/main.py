@@ -10,27 +10,29 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+import logging
+
+# Configure logging to see errors in Render logs
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("uvicorn.error")
+
 # Set all CORS enabled origins
-# We allow localhost for development and the specific Vercel frontend domain
-origins = [
+# We use regex to allow all Vercel subdomains (including previews)
+# and explicit strings for localhost and the main domain.
+allowed_origins = [
     "http://localhost:3000",
     "http://localhost:5173",
     "https://digitalbazar-com.vercel.app",
     "https://digital-bazar-adwa.onrender.com"
 ]
 
-# If settings.CORS_ORIGINS contains more, add them
-if settings.CORS_ORIGINS and settings.CORS_ORIGINS != "*":
-    env_origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",")]
-    for o in env_origins:
-        if o not in origins:
-            origins.append(o)
-
-print(f"Allowed CORS Origins: {origins}")
+# regex to allow: https://digital-bazar-*.vercel.app and https://digitalbazar-*.vercel.app
+origin_regex = r"https?://(localhost|digital-?bazar-.*\.vercel\.app|digitalbazar-.*\.vercel\.app)"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=allowed_origins,
+    allow_origin_regex=origin_regex,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -39,10 +41,15 @@ app.add_middleware(
 
 @app.middleware("http")
 async def log_requests(request, call_next):
-    print(f"DEBUG: Request {request.method} {request.url}")
-    response = await call_next(request)
-    print(f"DEBUG: Response status: {response.status_code}")
-    return response
+    logger.debug(f"Incoming request: {request.method} {request.url}")
+    try:
+        response = await call_next(request)
+        logger.debug(f"Response status: {response.status_code}")
+        return response
+    except Exception as e:
+        logger.error(f"Error handling request: {str(e)}", exc_info=True)
+        # Re-raise to let FastAPI handle it or return a 500
+        raise e
 
 @app.on_event("startup")
 async def startup_event():
