@@ -13,7 +13,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
 mongo_url = os.environ.get('MONGO_URL')
-db_name = os.environ.get('DB_NAME', 'digital_bazar')
+db_name = os.environ.get('DB_NAME', 'digital_bazar_test')
 
 if not mongo_url:
     print("Error: MONGO_URL not found in environment variables.")

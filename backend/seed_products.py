@@ -9,7 +9,7 @@ ROOT_DIR = Path(__file__).resolve().parent
 load_dotenv(ROOT_DIR / ".env")
 
 MONGO_URL = os.getenv("MONGO_URL")
-DB_NAME = os.getenv("DB_NAME", "digital_bazar")
+DB_NAME = os.getenv("DB_NAME", "digital_bazar_test")
 
 async def seed_products():
     print(f"Connecting to {MONGO_URL}...")

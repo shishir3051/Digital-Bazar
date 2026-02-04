@@ -34,12 +34,14 @@ async def get_bkash_token():
         return resp.json()
 
 @router.post('/bkash/create-payment')
-async def bkash_create_payment(current_user: User = Depends(get_current_user), db = Depends(get_database)):
+async def bkash_create_payment(current_user: User = Depends(get_current_user)):
     """Create a bKash payment for the current user's cart. Returns a payment id and approval URL (if available).
 
     This also creates a pending `Order` document in DB and returns the `order_id` so subsequent webhook/execute can reconcile.
     Note: This implementation is sandbox-friendly. You should configure BKASH_BASE_URL, BKASH_APP_KEY, BKASH_APP_SECRET in your .env for real sandbox calls.
     """
+    # Resolve database at runtime so tests can override get_database
+    db = await get_database()
     cart_items = await db.cart_items.find({"user_id": current_user.id}).to_list(1000)
     if not cart_items:
         raise HTTPException(status_code=400, detail="Cart is empty")
@@ -104,10 +106,11 @@ async def bkash_create_payment(current_user: User = Depends(get_current_user), d
         return {"paymentId": data.get('paymentID') or data.get('paymentID'), "approvalUrl": data.get('bkashURL') or data.get('approvalUrl'), "amount_bdt": bdt_total, "order_id": order_doc["id"], "merchant_invoice": merchant_invoice}
 
 @router.post('/bkash/execute-payment')
-async def bkash_execute_payment(request: Request, db = Depends(get_database)):
+async def bkash_execute_payment(request: Request):
     """Execute/verify a bKash payment after user approval.
     Expected body: { paymentId: str, payerReference: str, orderId?: str, merchantInvoice?: str }
     """
+    db = await get_database()
     body = await request.json()
     payment_id = body.get('paymentId')
     payer_ref = body.get('payerReference')
@@ -157,11 +160,12 @@ async def bkash_execute_payment(request: Request, db = Depends(get_database)):
         raise HTTPException(status_code=400, detail='Payment execution failed')
 
 @router.post('/bkash/webhook')
-async def bkash_webhook(request: Request, db = Depends(get_database)):
+async def bkash_webhook(request: Request):
     """Receive notifications from bKash (configure your webhook URL in bKash dashboard).
     For sandbox testing, the webhook payload will be accepted and used to reconcile orders.
     Expected payload (example): { "event": "payment.success", "paymentID": "...", "merchantInvoiceNumber": "...", "paymentInfo": { ... } }
     """
+    db = await get_database()
     payload = await request.json()
     print("Received bKash webhook payload:", payload)
 
