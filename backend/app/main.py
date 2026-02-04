@@ -1,4 +1,4 @@
-# Deployment Version: 2026-02-04-V5 (Ultra Stable)
+# Deployment Version: 2026-02-04-V6 (Final Fixes)
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from .api.api import api_router
@@ -8,19 +8,28 @@ import logging
 import sys
 
 # Immediate log to confirm file is loaded
-print("STARTUP: Loading main.py V5...")
+print("STARTUP: Loading main.py V6...")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    redirect_slashes=False # Prevent 307 redirects which break CORS
 )
 
-# Simplified "Allow All" CORS
+# Robust CORS settings
+allowed_origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://digitalbazar-com.vercel.app",
+    "https://digitalbazar.vercel.app", # Direct domain seen in logs
+    "https://digital-bazar-adwa.onrender.com"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=allowed_origins,
+    allow_credentials=True, # We can use True with specific origins
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
