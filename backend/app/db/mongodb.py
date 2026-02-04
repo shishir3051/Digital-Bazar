@@ -78,5 +78,9 @@ async def connect_to_mongo():
 async def get_database():
     """Dependency that ensures a database connection exists before providing it."""
     if db_instance.db is None:
-        await connect_to_mongo()
+        try:
+            await connect_to_mongo()
+        except Exception as e:
+            print(f"WARNING: Database connection failed on request: {str(e)}")
+            # Return db_instance anyway, so the error is handled at endpoint level
     return db_instance.db

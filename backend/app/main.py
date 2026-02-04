@@ -30,33 +30,21 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     print("STARTUP: Entering startup_event")
-    try:
-        await connect_to_mongo()
-        print("STARTUP: MongoDB connected successfully")
-    except Exception as e:
-        print(f"STARTUP ERROR: MongoDB connection failed: {str(e)}")
-        # Don't re-raise, let the app start so we can see health check
-        pass
+    # Don't block on database connection - connect lazily when needed
+    print("STARTUP: Skipping immediate MongoDB connection (will connect on first request)")
 
 @app.middleware("http")
 async def log_requests(request, call_next):
     print(f"DEBUG: Request {request.method} {request.url}")
     try:
-        return await call_next(request)
+        response = await call_next(request)
+        return response
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
-        print(f"CRITICAL ERROR: {str(e)}\n{error_details}")
-        # Return the error details temporarily so we can debug live
-        from fastapi.responses import JSONResponse
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": "Internal Server Error",
-                "message": str(e),
-                "trace": error_details if not settings.VERSION.startswith("1") else "hidden"
-            }
-        )
+        print(f"MIDDLEWARE ERROR: {str(e)}\n{error_details}")
+        # Let FastAPI handle the error, don't catch it here
+        raise
 
 # Include the router at BOTH /api and / (for compatibility)
 app.include_router(api_router, prefix=settings.API_V1_STR)
