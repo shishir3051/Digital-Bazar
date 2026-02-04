@@ -218,7 +218,6 @@ async def forgot_password(request: ForgotPasswordRequest):
     
     return {"message": "OTP sent successfully"}
 
-@api_router.post("/api/auth/reset-password") # Correcting prefix if needed, or stick to /auth/reset-password
 @api_router.post("/auth/reset-password")
 async def reset_password(request: ResetPasswordRequest):
     reset_session = await db.password_resets.find_one({"email": request.email})
@@ -534,22 +533,10 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
-# CORS Configuration
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://digitalbazar-com.vercel.app",
-]
-
-# Allow additional origins from environment variable
-env_origins = os.environ.get('CORS_ORIGINS')
-if env_origins:
-    origins.extend(env_origins.split(','))
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
     allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
