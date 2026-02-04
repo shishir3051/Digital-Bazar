@@ -533,22 +533,16 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
-# Set all CORS enabled origins
-allowed_origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "https://digitalbazar-com.vercel.app",
-    "https://digital-bazar-adwa.onrender.com"
-]
+from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
 
-# regex to allow: https://digital-bazar-*.vercel.app and https://digitalbazar-*.vercel.app
-origin_regex = r"https?://(localhost|digital-?bazar-.*\.vercel\.app|digitalbazar-.*\.vercel\.app)"
+# Robust Proxy Support for Render
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
+# Simplified "Allow All" CORS (matches Portfolio logic style)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_origin_regex=origin_regex,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
