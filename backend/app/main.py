@@ -17,19 +17,11 @@ app = FastAPI(
     redirect_slashes=False # Prevent 307 redirects which break CORS
 )
 
-# Robust CORS settings
-allowed_origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "https://digital-bazar-zeta.vercel.app",  # Your Vercel frontend
-    "https://digitalbazar-com.vercel.app",
-    "https://digitalbazar.vercel.app"
-]
-
+# CORS settings - allow all origins for development/production flexibility
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True, # We can use True with specific origins
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=False,  # Must be False when allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
